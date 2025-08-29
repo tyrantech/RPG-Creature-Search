@@ -1,0 +1,146 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Search App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+  <div class="bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg">
+    <h1 class="text-2xl font-bold text-center text-indigo-600 mb-6">Creature Search</h1>
+    
+    <!-- Search Section -->
+    <div class="flex gap-2 mb-6">
+      <input 
+        type="text" 
+        id="search-input" 
+        placeholder="Enter name or ID" 
+        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      />
+      <button 
+        id="search-button" 
+        class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+        Search
+      </button>
+    </div>
+
+    <!-- Creature Info -->
+    <div class="space-y-2 mb-6 text-gray-700">
+      <p class="text-lg font-semibold" id="creature-name"></p>
+      <p class="text-sm text-gray-500" id="creature-id"></p>
+      <p id="weight"></p>
+      <p id="height"></p>
+      <p id="types"></p>
+    </div>
+
+    <!-- Stats Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse border border-gray-300 text-sm">
+        <thead class="bg-indigo-100">
+          <tr>
+            <th class="border border-gray-300 px-4 py-2 text-left">Base</th>
+            <th class="border border-gray-300 px-4 py-2 text-left">Stat</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border px-4 py-2">HP</td>
+            <td class="border px-4 py-2"><span id="hp"></span></td>
+          </tr>
+          <tr>
+            <td class="border px-4 py-2">Attack</td>
+            <td class="border px-4 py-2"><span id="attack"></span></td>
+          </tr>
+          <tr>
+            <td class="border px-4 py-2">Defense</td>
+            <td class="border px-4 py-2"><span id="defense"></span></td>
+          </tr>
+          <tr>
+            <td class="border px-4 py-2">Special Attack</td>
+            <td class="border px-4 py-2"><span id="special-attack"></span></td>
+          </tr>
+          <tr>
+            <td class="border px-4 py-2">Special Defense</td>
+            <td class="border px-4 py-2"><span id="special-defense"></span></td>
+          </tr>
+          <tr>
+            <td class="border px-4 py-2">Speed</td>
+            <td class="border px-4 py-2"><span id="speed"></span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const userInput = document.getElementById("search-input");
+    const searchBtn = document.getElementById("search-button");
+    const creatureName = document.getElementById("creature-name");
+    const creatureId = document.getElementById("creature-id");
+    const weight = document.getElementById("weight");
+    const height = document.getElementById("height");
+    const creatureType = document.getElementById("types");
+    const hp = document.getElementById("hp");
+    const attack = document.getElementById("attack");
+    const defense = document.getElementById("defense");
+    const specialAttack = document.getElementById("special-attack");
+    const specialDefense = document.getElementById("special-defense");
+    const speed = document.getElementById("speed");
+
+    async function getData() {
+      const prompt = userInput.value.toLowerCase();
+      const url = `https://rpg-creature-api.freecodecamp.rocks/api/creature/${prompt}`;
+      try {
+        const fet = await fetch(url);
+        if (!fet.ok) {
+          alert("Creature not found!");
+          return;
+        }
+        const data = await fet.json();
+        displayData(data);
+      } catch (e) {
+        console.error(e);
+        clearDisplay();
+      }
+    }
+
+    function displayData(data) {
+      const { height: h, id, name, special, stats, types, weight: w } = data;
+      const typesMapped = types.map(({ name }) => `${name.toUpperCase()}`);
+      const statMap = {
+        "hp": hp,
+        "attack": attack,
+        "defense": defense,
+        "special-attack": specialAttack,
+        "special-defense": specialDefense,
+        "speed": speed,
+      };
+
+      creatureName.textContent = `${name.toUpperCase()}`;
+      creatureId.textContent = `#${id}`;
+      weight.textContent = `Weight: ${w}`;
+      height.textContent = `Height: ${h}`;
+      creatureType.textContent = `Type: ${typesMapped}`;
+
+      Object.values(statMap).forEach(el => el.textContent = "");
+      stats.map(({ name, base_stat }) => {
+        if (statMap[name]) {
+          statMap[name].textContent = base_stat;
+        }
+      });
+    }
+
+    function clearDisplay() {
+      creatureName.textContent = "";
+      creatureId.textContent = "";
+      weight.textContent = "";
+      height.textContent = "";
+      creatureType.textContent = "";
+      [hp, attack, defense, specialAttack, specialDefense, speed].forEach(el => el.textContent = "");
+    }
+
+    searchBtn.addEventListener("click", getData);
+  </script>
+</body>
+</html>
+
